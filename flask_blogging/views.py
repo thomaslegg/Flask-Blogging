@@ -1,4 +1,3 @@
-from __future__ import division
 try:
     from builtins import str
 except ImportError:
@@ -21,7 +20,7 @@ from .signals import page_by_id_fetched, page_by_id_processed, \
     sitemap_posts_fetched, sitemap_posts_processed, editor_post_saved, \
     post_deleted, editor_get_fetched
 from .utils import ensureUtf
-
+import collections
 
 def _get_blogging_engine(app):
     return app.extensions["FLASK_BLOGGING_ENGINE"]
@@ -94,7 +93,7 @@ def _get_meta(storage, count, page, tag=None, user_id=None):
 
 def _is_blogger(blogger_permission):
     authenticated = current_user.is_authenticated() if \
-        callable(current_user.is_authenticated) \
+        isinstance(current_user.is_authenticated, collections.Callable) \
         else current_user.is_authenticated
     is_blogger = authenticated and \
         blogger_permission.require().can()
