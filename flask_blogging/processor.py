@@ -59,10 +59,10 @@ class PostProcessor(object):
         post["rendered_text"] = md.convert(post["text"])
         post["meta"] = md.Meta
 
-@classmethod
+    @classmethod
     def is_author(cls, post, user):
-        return user.get_id() == ''+str(post['user_id'])
-
+        return int(user.get_id()) == int(post['user_id'])  
+        
     @classmethod
     def process(cls, post, render=True):
         """
