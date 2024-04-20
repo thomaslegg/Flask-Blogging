@@ -1,0 +1,61 @@
+{% extends "blogging/base.html" %}
+{% block meta %}
+    {% include 'blogging/metatags.html' %}
+{% endblock meta %}
+{% block title %}
+    {{post.title}}
+{% endblock title %}
+
+{% block main %}
+{% if meta.is_user_blogger %}
+    <div class="pull-right">
+    {% if post.editable %}
+        <form action="{{ url_for('blogging.delete', post_id=post.post_id) }}" method="POST" class="confirmation" style="display: inline">
+            <input type="submit" value="Delete"  id="confirmedDelete"/>
+        </form>
+        &nbsp&nbsp&nbsp&nbsp
+        <a href="{{ url_for('blogging.editor', post_id=post.post_id) }}" id="edit">
+            <span class="glyphicon glyphicon-edit"></span>&nbsp;Edit
+        </a>&nbsp&nbsp&nbsp&nbsp
+    {% endif %}
+        <a href="{{ url_for('blogging.editor') }}" id="new">
+            <span class="glyphicon glyphicon-plus"></span>&nbsp;New
+        </a>
+    </div>
+{% endif %}
+
+
+  <div class="entry"><div class="entryTitle"><a href="{{ url_for('blogging.page_by_id', post_id=post.post_id, slug=post.slug) }}">
+      <h2>{{ post.title }}</h2></div>
+  </a>
+    <div class="entryInfo small"><p>Posted by <a href="{{ url_for('blogging.posts_by_author', user_id=post.user_id)}}"><em>{{post.user_name}}</em></a>
+on {{post.post_date.strftime('%d %b, %Y')}}</p></div>
+    <div class="entryBody">{{post.rendered_text | safe}}</div>
+
+  <br>
+  <!-- article tags-->
+  {% if post.tags %}
+    <span class="glyphicon glyphicon-tags"></span>Tags:&nbsp;&nbsp;
+    {% for tag in post.tags %}
+        <span class="label small">
+          <a href="{{ url_for('blogging.posts_by_tag', tag=tag.lower(), count=10, offset=0) }}">
+          {{ tag }}
+          </a>
+        </span>&nbsp;&nbsp;
+    {% endfor %}
+    <br>
+  {% endif %}
+  <br>
+  {% include "blogging/social_links.html" %}
+  <hr></div>
+{% include "blogging/disqus.html" %}
+<script type="text/javascript">
+    var elems = document.getElementsByClassName('confirmation');
+    var confirmIt = function (e) {
+        if (!confirm('Are you sure?')) e.preventDefault();
+    };
+    for (var i = 0, l = elems.length; i < l; i++) {
+        elems[i].addEventListener('submit', confirmIt, false);
+    }
+</script>
+{% endblock main %}
