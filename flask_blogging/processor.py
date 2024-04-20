@@ -61,7 +61,10 @@ class PostProcessor(object):
 
     @classmethod
     def is_author(cls, post, user):
-        return int(user.get_id()) == int(post['user_id'])  
+        get_id = user.get_id()
+        if isinstance(get_id, type(None)):
+            get_id = 0 
+        return int(get_id) == int(post['user_id'])  
         
     @classmethod
     def process(cls, post, render=True):
