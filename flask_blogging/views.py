@@ -21,6 +21,7 @@ from .signals import page_by_id_fetched, page_by_id_processed, \
     post_deleted, editor_get_fetched
 from .utils import ensureUtf
 import collections
+collections.Callable = collections.abc.Callable
 
 def _get_blogging_engine(app):
     return app.extensions["FLASK_BLOGGING_ENGINE"]
