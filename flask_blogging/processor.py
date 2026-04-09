@@ -30,8 +30,8 @@ from slugify import slugify
 #        md.inlinePatterns.add('mathjax', MathJaxPattern(), '<escape')
 
 
-def makeExtension(configs=[]):
-    return MathJaxExtension(configs)
+#def makeExtension(configs=[]):
+#    return MathJaxExtension(configs)
 
 
 class PostProcessor(object):
