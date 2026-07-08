@@ -9,35 +9,45 @@ from flask import url_for
 from flask_login import current_user
 from slugify import slugify
 
+class MathJaxPattern(markdown.inlinepatterns.InlineProcessor):
+    """
+    Matches unescaped `$` or `$$` and wraps the whole match in a <mathjax> tag.
+    The pattern keeps the original delimiters so that downstream processors (e.g. KaTeX)
+    see exactly what was typed by the author.
 
-#class MathJaxPattern(markdown.inlinepatterns.Pattern):
+    Regex (read as:  negative , then $ or $$, then
+    minimal content, then *the same delimiter again*):
+        (?<!\\)(\$\$?)(.+?)\2
+    """
+    def __init__(self):
+        # No need to pass a Markdown  it will be supplied when we register.
+        super().__init__(r'(?<!\\)(\$\$?)(.+?)\2')
 
-#    def __init__(self):
-#        markdown.inlinepatterns.Pattern.__init__(self,
-#                                                 r'(?<!\\)(\$\$?)(.+?)\2')
+    def handleMatch(self, m, data):
+        """Return the `<mathjax>` element and span of the original match."""
+        node = etree.Element('mathjax')
+        # Preserve the original delimiters (1) around the content (2)
+        node.text = AtomicString(m.group(1) + m.group(2) + m.group(1))
+        return node, m.start(0), m.end(0)
 
-#    def handleMatch(self, m):
-#        node = markdown.util.etree.Element('mathjax')
-#        node.text = markdown.util.AtomicString(m.group(2) + m.group(3) +
-#                                               m.group(2))
-#        return node
+class MathJaxExtension(markdown.Extension):
+    """Register the `MathJaxPattern` as an inline processor."""
+
+    def extendMarkdown(self, md: markdown.Markdown):
+        # Use a high numeric priority so this runs **before** the in escape
+        # pattern (`escape`).  The exact value t  it just has to be
+        # larger 200).  175 works for the default stack.
+        md.inlinePatterns.register(MathJaxPattern(), 'mathjax', 175)
 
 
-#class MathJaxExtension(markdown.Extension):
-#    def extendMarkdown(self, md, md_globals):
-        # Needs to come before escape matching because \ is pretty important
-        # in LaTeX
-#        md.inlinePatterns.add('mathjax', MathJaxPattern(), '<escape')
-
-
-#def makeExtension(configs=[]):
-#    return MathJaxExtension(configs)
+def makeExtension(**kwargs):
+    """Compatibility hook used by `markdown.Extension`."""
+    return MathJaxExtension(**kwargs)
 
 
 class PostProcessor(object):
 
-#    _markdown_extensions = [MathJaxExtension(), MetaExtension()]
-    _markdown_extensions = MetaExtension()]
+    _markdown_extensions = [MathJaxExtension(), MetaExtension()]
 
     @staticmethod
     def create_slug(title):
@@ -62,11 +72,8 @@ class PostProcessor(object):
 
     @classmethod
     def is_author(cls, post, user):
-        get_id = user.get_id()
-        if isinstance(get_id, type(None)):
-            get_id = 0 
-        return int(get_id) == int(post['user_id'])  
-        
+        return user.get_id() == u''+str(post['user_id'])
+
     @classmethod
     def process(cls, post, render=True):
         """
